@@ -79,9 +79,7 @@ with st.expander("⚙️  Advanced options"):
         help="Only issues with this status will be included in the report."
     )
 
-else:
-    sheet_tab     = "Quality Circle"
-    status_filter = "REVIEWED"
+# defaults are set inside the expander via value=, no else needed
 
 st.markdown("---")
 
