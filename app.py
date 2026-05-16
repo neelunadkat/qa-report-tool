@@ -101,7 +101,13 @@ if st.button("🚀  Generate Report", type="primary", use_container_width=True):
 
             # Load credentials from Streamlit Secrets
             # In Streamlit Cloud: Settings → Secrets → add GOOGLE_CREDENTIALS
-            creds_data = json.loads(st.secrets["GOOGLE_CREDENTIALS"])
+            # Load credentials from Streamlit Secrets (native TOML format)
+            # Paste your credentials.json fields directly in Streamlit > Secrets as TOML
+            # e.g:  type = "service_account"
+            #        project_id = "qa-report-tool"
+            #        private_key = "-----BEGIN PRIVATE KEY-----\n..."
+            #        client_email = "qa-report-bot@..."   etc.
+            creds_data = {k: v for k, v in st.secrets.items()}
             creds = Credentials.from_service_account_info(
                 creds_data,
                 scopes=[
@@ -270,18 +276,17 @@ if st.button("🚀  Generate Report", type="primary", use_container_width=True):
             f"Click the button above to download."
         )
 
-    except KeyError as e:
-        if "GOOGLE_CREDENTIALS" in str(e):
+    except Exception as e:
+        err = str(e)
+        if "secrets" in err.lower() or "service_account" in err.lower() or "credentials" in err.lower():
             st.error(
-                "❌  Google credentials not configured. "
-                "If you are the app admin: go to Streamlit Cloud → App Settings → Secrets "
-                "and add GOOGLE_CREDENTIALS with your service account JSON."
+                "❌  Credentials error. Go to Streamlit Cloud → App Settings → Secrets "
+                "and make sure all fields from your credentials.json are pasted in TOML format. "
+                "See the 'How to use this tool' section above for the exact format."
             )
         else:
-            st.error(f"❌  Configuration error: {e}")
-    except Exception as e:
-        st.error(f"❌  Something went wrong: {e}")
-        with st.expander("Error details"):
+            st.error(f"❌  Something went wrong: {e}")
+        with st.expander("Error details (share with QA Team Lead)"):
             import traceback
             st.code(traceback.format_exc())
 
